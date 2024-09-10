@@ -21,10 +21,11 @@ const char* vertexShaderSource = R"(
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec4 aColor;
 out vec4 Color;
+uniform float time;
 void main()
 {
    Color = aColor;
-   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+   gl_Position = vec4(aPos.x, aPos.y + sin((time+aPos.x)*2.5)/5, aPos.z, 1.0);
 };
 )";
 //ABOVE CAN USE R"()"; to avoid using \n and format as a multiline string by default
@@ -33,11 +34,10 @@ const char* fragmentShaderSource = R"(
 #version 330 core
 out vec4 FragColor;
 in vec4 Color;
-uniform vec4 updateColor;
+uniform float updateColor;
 void main()
 {
-    FragColor = Color;
-	//FragColor = updateColor;
+    FragColor = Color * updateColor;
 } 
 )";
 
@@ -143,9 +143,12 @@ int main() {
 		float time = glfwGetTime();
 
 		//color
-		//int vertexColorLocation = glGetUniformLocation(shaderProgram, "updateColor");
-		//glUniform4f(vertexColorLocation, 1.0f*cos(time), 0.0f, 0.0f, 1.0f);
-		//basically a variable inside the preset strings you can change in an outside loop
+		unsigned int vertexColorLocation = glGetUniformLocation(shaderProgram, "updateColor");
+		glUniform1f(vertexColorLocation, abs(sin(time)));
+
+		//position
+		int vertexTimeLocation = glGetUniformLocation(shaderProgram, "time");
+		glUniform1f(vertexTimeLocation, time);
 
 		//render things
 		glDrawArrays(GL_TRIANGLES, 0, 3);
