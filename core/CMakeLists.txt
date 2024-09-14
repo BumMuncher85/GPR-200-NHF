@@ -15,7 +15,7 @@ set(CORE_INC_DIR
  CACHE PATH "CORE INCLUDE SOURCE PATH"
 )
 
-add_library(core STATIC ${CORE_SRC} ${CORE_INC})
+add_library(core STATIC ${CORE_SRC} ${CORE_INC} "Shader/shader.cpp")
 
 find_package(OpenGL REQUIRED)
 
@@ -23,4 +23,3 @@ target_link_libraries(core PUBLIC IMGUI)
 
 install (TARGETS core DESTINATION lib)
 install (FILES ${CORE_INC} DESTINATION include/core)
-
