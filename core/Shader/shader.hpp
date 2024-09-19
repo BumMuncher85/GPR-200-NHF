@@ -10,7 +10,7 @@ namespace SHADER_NS {
         unsigned int ID;
 
         // constructor reads and builds the shader
-        Shader(const char* vertexPath, const char* fragmentPath);
+        Shader(const char* vertexPath, const char* fragmentPath, const std::string& name);
 
         // use/activate the shader
         void use();

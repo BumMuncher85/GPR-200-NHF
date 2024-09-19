@@ -3,7 +3,8 @@
 #include <fstream>
 #include <sstream>
 
-SHADER_NS::Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+SHADER_NS::Shader::Shader(const char* vertexPath, const char* fragmentPath, const std::string& name) {
+    std::cout << "INITIALIZING_SHADER::" << name << std::endl;
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;

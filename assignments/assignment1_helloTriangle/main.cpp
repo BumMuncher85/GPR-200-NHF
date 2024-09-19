@@ -56,7 +56,7 @@ int main() {
     glEnableVertexAttribArray(1);
 
     // Shader setup
-    SHADER_NS::Shader shader(vertexShaderPath, fragmentShaderPath);
+    SHADER_NS::Shader shader(vertexShaderPath, fragmentShaderPath, "ASSIGNMENT_1");
 
     // Main render loop
     while (!glfwWindowShouldClose(window)) {

@@ -24,3 +24,4 @@ include(external/glm.cmake)
 
 add_subdirectory(core)
 add_subdirectory(assignments/assignment1_helloTriangle)
+add_subdirectory(assignments/assignment2)
