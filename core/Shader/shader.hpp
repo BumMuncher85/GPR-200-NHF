@@ -20,4 +20,14 @@ namespace SHADER_NS {
         void setInt(const std::string& name, int value) const;
         void setFloat(const std::string& name, float value) const;
     };
+    class Texture2D {
+    public:
+        Texture2D(const char* filePath, int filterMode, int wrapMode, const std::string& name);
+        ~Texture2D();
+        void Bind(unsigned int slot = 0); //Bind to a specific texture unit
+
+    private:
+        unsigned int m_id; //GL texture handle
+        int m_width, m_height, m_channels;
+    };
 }

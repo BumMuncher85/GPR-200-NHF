@@ -10,7 +10,7 @@ uniform float time;
 
 void main()
 {
-    gl_Position = vec4(aPos.x, aPos.y+abs(sin(time*5))/6, aPos.z, 1.0);
+    gl_Position = vec4(aPos.x*2, aPos.y*2, aPos.z*2, 1.0);
     ourColor = aColor;
-    TexCoord = aTexCoord;
+    TexCoord = vec2((aTexCoord.x*8 + time), (aTexCoord.y*8));
 }

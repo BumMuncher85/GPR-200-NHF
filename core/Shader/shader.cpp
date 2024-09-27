@@ -1,7 +1,9 @@
 #include "shader.hpp"
+#include "../../core/ew/external/stb_image.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
 
 SHADER_NS::Shader::Shader(const char* vertexPath, const char* fragmentPath, const std::string& name) {
     std::cout << "INITIALIZING_SHADER::" << name << std::endl;
@@ -98,4 +100,46 @@ void SHADER_NS::Shader::setInt(const std::string& name, int value) const {
 
 void SHADER_NS::Shader::setFloat(const std::string& name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+SHADER_NS::Texture2D::Texture2D(const char* filePath, int filterMode, int wrapMode, const std::string& name) {
+    std::cout << "INITIALIZING_TEXTURE::" << name << std::endl;
+    //Texture setup
+    glGenTextures(1, &m_id);
+    glBindTexture(GL_TEXTURE_2D, m_id);
+    //wrap and filter settings
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
+    //flip the image so its not upside down
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* data = stbi_load(filePath, &m_width, &m_height, &m_channels, 0);
+    //load image
+    if (data)
+    {
+        if (m_channels == 4) { // if alpha channel
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            std::cout << "TEXTURE::USING_RGBA" << std::endl;
+        }
+        else if (m_channels == 3) { // if no alpha channel
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            std::cout << "TEXTURE::USING_RGB" << std::endl;
+        }
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "INITIALIZING_TEXTURE::FAILURE" << std::endl;
+    }
+    stbi_image_free(data);
+}
+
+void SHADER_NS::Texture2D::Bind(unsigned int slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, m_id);
+}
+
+SHADER_NS::Texture2D::~Texture2D() {
+    glDeleteTextures(1, &m_id);
 }

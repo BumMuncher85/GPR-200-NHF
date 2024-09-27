@@ -20,7 +20,6 @@ const char* vertexShaderPath = "assets/vertex.vert";
 const char* fragmentShaderPath = "assets/fragment.frag";
 
 int main() {
-    std::cout << "Initializing..." << std::endl;
     if (!glfwInit()) {
         std::cerr << "GLFW failed to initialize!" << std::endl;
         return -1;
@@ -69,7 +68,7 @@ int main() {
 
         // Update uniforms
         float time = glfwGetTime();
-        shader.setFloat("updateColor", abs(sin(time)));
+        shader.setFloat("updateColor", abs(tan(time)));
         shader.setFloat("time", time);
 
 
