@@ -2,6 +2,9 @@
 
 #include "../ew/external/glad.h"
 #include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace SHADER_NS {
     class Shader {
@@ -19,6 +22,7 @@ namespace SHADER_NS {
         void setBool(const std::string& name, bool value) const;
         void setInt(const std::string& name, int value) const;
         void setFloat(const std::string& name, float value) const;
+        void setMat4(const std::string& name, glm::mat4 value) const;
     };
     class Texture2D {
     public:
