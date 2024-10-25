@@ -169,10 +169,10 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); // texture coordinates
     glEnableVertexAttribArray(1);
-    
+
     //other
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0); 
+    glBindVertexArray(0);
 
     // Shader setup (using custom library)
     Shader shader(vertexShaderPath, fragmentShaderPath, "ASSIGNMENT_4");
@@ -182,7 +182,7 @@ int main() {
 
     //z-buffer
     glEnable(GL_DEPTH_TEST);
-    
+
     // Focus window
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -207,13 +207,13 @@ int main() {
 
         // Render
         glBindVertexArray(VAO);
-        
+
         // Finalize Shader
         shader.use();
         shader.setFloat("time", time);
         glActiveTexture(GL_TEXTURE0);
         texture.Bind();
-        
+
         float currentFrame = static_cast<float>(time);
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -245,23 +245,18 @@ int main() {
         {
             glm::mat4 model = glm::mat4(1.0f);
 
-            // Position the cubes
             model = glm::translate(model, cubepositions[i]);
 
-            // Calculate the angle for rotation
             float angle = 1.0f * i + currentTime * 10.0f;
             model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
-            // Scaling effect using sin/cos based on time
             float scaleValue = 0.1f + 1.0f * sin(currentTime + i);
             model = glm::scale(model, glm::vec3(scaleValue, scaleValue, scaleValue));
 
-            // Add some movement using sin/cos
             float moveX = 3.2f * cos(currentTime + i);
             float moveY = 3.2f * sin(currentTime + i);
             model = glm::translate(model, glm::vec3(moveX, moveY, 0.0f));
 
-            // Set the modified model matrix
             shader.setMat4("model", model);
 
             // Draw the object
