@@ -3,11 +3,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
-
+//Shader Definitions
 SHADER_NS::Shader::Shader(const char* vertexPath, const char* fragmentPath, const std::string& name) {
     std::cout << "INITIALIZING_SHADER::" << name << std::endl;
     // 1. retrieve the vertex/fragment source code from filePath
@@ -89,10 +93,6 @@ SHADER_NS::Shader::Shader(const char* vertexPath, const char* fragmentPath, cons
     glDeleteShader(fragment);
 }
 
-void SHADER_NS::Shader::use() {
-    glUseProgram(ID);
-}
-
 void SHADER_NS::Shader::setBool(const std::string& name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
@@ -109,6 +109,15 @@ void SHADER_NS::Shader::setMat4(const std::string& name, glm::mat4 value) const 
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
 
+void SHADER_NS::Shader::setVec3(const std::string& name, glm::vec3 value) const {
+    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+}
+
+void SHADER_NS::Shader::use() {
+    glUseProgram(ID);
+}
+
+//Texture2D Definitions
 SHADER_NS::Texture2D::Texture2D(const char* filePath, int filterMode, int wrapMode, const std::string& name) {
     std::cout << "INITIALIZING_TEXTURE::" << name << std::endl;
     //Texture setup
@@ -149,4 +158,131 @@ void SHADER_NS::Texture2D::Bind(unsigned int slot) {
 
 SHADER_NS::Texture2D::~Texture2D() {
     glDeleteTextures(1, &m_id);
+}
+
+//Camera Definitions
+SHADER_NS::Camera::Camera(GLFWwindow* window) {
+    //Point to self
+    camera = this;
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+}
+
+void SHADER_NS::Camera::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (camera->lockCamera == true) {
+        if (camera->firstMouse)
+        {
+            camera->lastX = xpos;
+            camera->lastY = ypos;
+            camera->firstMouse = false;
+        }
+
+        float xoffset = xpos - camera->lastX;
+        float yoffset = camera->lastY - ypos;
+        camera->lastX = xpos;
+        camera->lastY = ypos;
+
+        float sensitivity = 0.1f;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
+
+        camera->yaw += xoffset;
+        camera->pitch += yoffset;
+
+        if (camera->pitch > 89.0f)
+            camera->pitch = 89.0f;
+        if (camera->pitch < -89.0f)
+            camera->pitch = -89.0f;
+
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(camera->yaw)) * cos(glm::radians(camera->pitch));
+        direction.y = sin(glm::radians(camera->pitch));
+        direction.z = sin(glm::radians(camera->yaw)) * cos(glm::radians(camera->pitch));
+        camera->cameraFront = glm::normalize(direction);
+    }
+}
+
+void SHADER_NS::Camera::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera->fov -= (float)yoffset;
+    if (camera->fov < 1.0f)
+        camera->fov = 1.0f;
+    if (camera->fov > 120.0f)
+        camera->fov = 120.0f;
+}
+
+void SHADER_NS::Camera::processInput(GLFWwindow* window, float dTime) {
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+        if (holdingMenu == false) {
+            lockCamera = !lockCamera;
+            holdingMenu = true;
+            if (lockCamera == true) {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            else {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
+        }
+    }
+    else {
+        holdingMenu = false;
+    }
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    float cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        cameraSpeed = static_cast<float>(10.0 * dTime);
+    }
+    else {
+        cameraSpeed = static_cast<float>(2.5 * dTime);
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->cameraPos += cameraSpeed * camera->cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->cameraPos -= cameraSpeed * camera->cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->cameraPos -= glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->cameraPos += glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        camera->cameraPos += camera->cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        camera->cameraPos -= camera->cameraUp * cameraSpeed;
+}
+
+//ImGui Definitions
+SHADER_NS::ImGUI::ImGUI(GLFWwindow* window, Camera* camera_pointer) {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+    camera = camera_pointer;
+    std::cout << "INITIALIZING_IMGUI::SUCCESS" << std::endl;
+}
+
+void SHADER_NS::ImGUI::StartImGuiFrame() {
+    if (camera->lockCamera == false) {
+        //Start Drawing
+        ImGui_ImplGlfw_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui::NewFrame();
+
+        //Make Settings Window
+        ImGui::Begin("Lighting Settings");
+        ImGui::DragFloat3("Light Position", &lightPosition.x, 0.1f);
+        ImGui::ColorEdit3("Light Color", &lightColor.x);
+        ImGui::Checkbox("Blinn-Phong Lighting", &blinn);
+        ImGui::SliderFloat("AmbientK", &ambient_k, 0.0f, 1.0f);
+        ImGui::SliderFloat("DiffuseK", &diffuse_k, 0.0f, 1.0f);
+        ImGui::SliderFloat("SpecularK", &specular_k, 0.0f, 1.0f);
+        ImGui::SliderFloat("Shininess", &shininess, 2, 1024);
+
+        ImGui::End();
+
+        //Actualy Render it
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }

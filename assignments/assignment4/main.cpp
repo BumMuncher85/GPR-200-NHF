@@ -276,7 +276,7 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
     float cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-         cameraSpeed = static_cast<float>(5.0 * deltaTime);
+         cameraSpeed = static_cast<float>(10.0 * deltaTime);
     }
     else {
          cameraSpeed = static_cast<float>(2.5 * deltaTime);
@@ -290,6 +290,10 @@ void processInput(GLFWwindow* window)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        cameraPos += cameraUp * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        cameraPos -= cameraUp * cameraSpeed;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
